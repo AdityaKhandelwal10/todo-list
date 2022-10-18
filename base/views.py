@@ -1,6 +1,7 @@
 
 # from django.shortcuts import render
 from winreg import CreateKeyEx
+from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 
@@ -34,6 +35,12 @@ class TaskListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['tasks'] = context['tasks'].filter(user= self.request.user)
         # context['count'] = context['task'].filter(complete = False).count()
+
+        search_input = self.request.GET.get('search-area') or ''
+        if search_input:
+            context['tasks'] = context['tasks'].filter(title__icontains = search_input)
+
+        context['search_input'] =search_input
         return context
 
 #The detailview class will provide detailed view
@@ -80,3 +87,9 @@ class RegisterUserView(FormView):
         user = form.save()
         login(self.request, user)
         return super(RegisterUserView, self).form_valid(form)
+
+    #Overriding, if we are already logged in we do not wanna see this register page
+    def get(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return redirect('tasks')
+        return super(RegisterUserView, self).get() #do as it was supposed to 
