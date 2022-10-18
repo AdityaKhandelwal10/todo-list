@@ -34,7 +34,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tasks'] = context['tasks'].filter(user= self.request.user)
-        # context['count'] = context['task'].filter(complete = False).count()
+        context['count'] = context['tasks'].filter(complete = False).count()
 
         search_input = self.request.GET.get('search-area') or ''
         if search_input:
@@ -92,4 +92,4 @@ class RegisterUserView(FormView):
     def get(self, *args, **kwargs):
         if self.request.user.is_authenticated:
             return redirect('tasks')
-        return super(RegisterUserView, self).get() #do as it was supposed to 
+        return super(RegisterUserView, self).get(*args, **kwargs) #do as it was supposed to 
