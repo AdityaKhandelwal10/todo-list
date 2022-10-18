@@ -27,6 +27,13 @@ class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     context_object_name = 'tasks'
 
+    #For user specific data, we get the context pbject and filter it
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tasks'] = context['tasks'].filter(user= self.request.user)
+        # context['count'] = context['task'].filter(complete = False).count()
+        return context
+
 #The detailview class will provide detailed view
 # looks for <model>_detail.html 
 class TaskDetailView(LoginRequiredMixin, DetailView):
@@ -41,14 +48,18 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
-    fields = '__all__'
+    fields = ['title', 'description', 'complete']
     success_url = reverse_lazy('tasks')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super(TaskCreateView, self).form_valid(form)
 
 #Update view -> Uses a prefilled form which we will update
 #Looks for the same template as create view, but here it provides a prepopulated form
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
-    fields = '__all__'
+    fields = ['title', 'description', 'complete']
     success_url = reverse_lazy('tasks')
 
 
