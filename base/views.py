@@ -1,12 +1,14 @@
 
 # from django.shortcuts import render
 from winreg import CreateKeyEx
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 
 from django.contrib.auth.views import LoginView
 
 from django.contrib.auth.mixins import  LoginRequiredMixin
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 
 from .models import Task
 
@@ -68,3 +70,13 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     context_object_name = 'task'
     success_url = reverse_lazy('tasks')
 
+class RegisterUserView(FormView):
+    template_name = 'base/register.html' 
+    form_class = UserCreationForm
+    redirect_authenticated_user = True
+    success_url = reverse_lazy('tasks')
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return super(RegisterUserView, self).form_valid(form)
